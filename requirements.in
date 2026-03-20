@@ -1,0 +1,4 @@
+ipykernel
+polars
+transformers[torch]<4.59
+wandb
