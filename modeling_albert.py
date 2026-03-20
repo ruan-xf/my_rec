@@ -16,7 +16,7 @@ from common import (
 class RecConfig(AlbertConfig):
     def __init__(
         self,
-        num_attention_heads=8,
+        num_attention_heads=12,
         embedding_size=60,
         num_labels=2,
         dropout=0.2,
@@ -24,13 +24,20 @@ class RecConfig(AlbertConfig):
         **kwargs
     ):
         assert embedding_size % len(seq_features) == 0
+        # 1. hidden_size 必须得是 num_attention_heads 的整数倍
+        # 2. ALBERT 的 FFN 中间层维度通常是 hidden_size * 4
+        # 也与预训练权重的设置进行了对比
+        hidden_size = num_attention_heads * 64
+        intermediate_size = hidden_size*4
         super().__init__(
             hidden_dropout_prob=dropout,
             attention_probs_dropout_prob=dropout,
             classifier_dropout_prob=dropout,
             num_attention_heads=num_attention_heads,
+            hidden_size=hidden_size,
             embedding_size=embedding_size,
             num_labels=num_labels,
+            intermediate_size=intermediate_size,
             **kwargs
         )
         self.dropout = dropout
