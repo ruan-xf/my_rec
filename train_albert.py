@@ -1,6 +1,4 @@
 from dataclasses import dataclass
-import shutil
-import transformers
 import wandb
 
 import utils
@@ -13,12 +11,14 @@ from modeling_albert import model_init
 @dataclass
 class AlbertTrainingArguments(config.MyDefaultTrainingArguments):
     output_dir: str = 'albert_rec'
-    per_device_train_batch_size: int = 8
-    per_device_eval_batch_size: int = 30
-    gradient_accumulation_steps: int = 32
+    per_device_train_batch_size: int = 6
+    per_device_eval_batch_size: int = 20
+    gradient_accumulation_steps: int = 42
     max_steps: int = 20000
-    warmup_ratio: float = 0.1
-    learning_rate: float = 0.001
+    # warmup_ratio: float = 0.1
+    # learning_rate: float = 0.001
+    warmup_steps: int = 1600
+    learning_rate: float = 2e-4
     lr_scheduler_type: str = "constant_with_warmup"
     fp16: bool = True
     logging_steps: int = 10
@@ -35,7 +35,7 @@ class AlbertFastDevRun(FastDevRun):
 
 def train():
     args = AlbertTrainingArguments()
-    # args, _ = setup_experiment(args)
+    args, _ = setup_experiment(args)
     ds_setting = create_ds_setting()
 
     trainer_params = build_trainer_params(
@@ -48,5 +48,10 @@ def train():
         wandb.run.finish()
 
 
-AlbertFastDevRun()()
+fast_dev_run = AlbertFastDevRun()
+# fast_dev_run.verbose = False
+fast_dev_run.delete_output = False
+
+fast_dev_run()
+
 # train()

@@ -25,6 +25,9 @@ seq_features = 'behavior_type category_id item_id'.split()
 # 特征词汇表大小配置
 feature_vocab_sizes = {'behavior_type': 9, 'category_id': 9277, 'item_id': 3652291}
 
+# item_id 采样范围（用于负样本采样）
+item_id_range = (1, 5163070)
+
 added_tokens_encoder = {'<pad>': 0, '<unk>': 1, '[CLS]': 2, '[SEP]': 3, '[MASK]': 4}
 
 sorted_tokens = list(added_tokens_encoder.keys())

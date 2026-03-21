@@ -14,6 +14,9 @@ uv sync  --extra cu126
 由于 full.parquet 过大未上传github（438MB，超过100MB都不能上传了所以还加了检查），需要先运行 data_util.py 的 save_full 函数  
 
 
+evaluate的roc_auc需要加载，要设置.env（见.env-example）
+
+
 ```
 2/
 ├── common.py          # 放共用的：feature_encoders, collate_fn, 等

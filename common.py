@@ -123,16 +123,14 @@ def setup_experiment(args):
 
 
 
-def create_ds_setting(eval_size: int = 48*80, test_size: int = 48*300):
-    """
-    创建 DatasetSetting
+def create_ds_setting(args: transformers.TrainingArguments, is_fast_dev_run: bool = False):
+    eval_size = 48*80
+    test_size = 48*300
 
-    Args:
-        eval_size: 评估集大小
-        test_size: 测试集大小
+    if is_fast_dev_run:
+        eval_size = 20
+        test_size = 20
 
-    Returns: ds_setting
-    """
     ds_setting = utils.DatasetSetting(eval_size)
     ds_setting._test_dataset = ds_setting._test_dataset.take(test_size)
     return ds_setting
@@ -166,8 +164,6 @@ class FastDevRun:
     args_class: Type[transformers.TrainingArguments] = None  # 原训练参数类
 
     def __init__(self):
-        self.eval_size = 20
-        self.test_size = 20
         self.early_stop_patience = 3
 
         self.train_args = self.args_class(
@@ -185,7 +181,7 @@ class FastDevRun:
         """执行fast_dev_run流程
         """
         # 小样本数据集
-        ds_setting = create_ds_setting(eval_size=self.eval_size, test_size=self.test_size)
+        ds_setting = create_ds_setting(True)
         # 构建训练器
         trainer_params = build_trainer_params(
             self.__class__.model_init(), self.train_args, ds_setting, collate_fn,
