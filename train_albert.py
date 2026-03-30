@@ -4,7 +4,7 @@ import wandb
 import utils
 import config
 
-from common import setup_experiment, create_ds_setting, build_trainer_params, collate_fn, FastDevRun
+from common import setup_experiment, create_ds_setting_parquet, build_trainer_params, collate_fn, FastDevRun
 from modeling_albert import model_init
 
 
@@ -35,8 +35,8 @@ class AlbertFastDevRun(FastDevRun):
 
 def train():
     args = AlbertTrainingArguments()
-    args, _ = setup_experiment(args)
-    ds_setting = create_ds_setting()
+    # args, _ = setup_experiment(args)
+    ds_setting = create_ds_setting_parquet()
 
     trainer_params = build_trainer_params(
         model_init(), args, ds_setting, collate_fn,

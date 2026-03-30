@@ -24,8 +24,39 @@ from tqdm.auto import tqdm
 import transformers
 import wandb
 
-from data_util import DatasetSetting
+from data_util import DatasetSetting as _DatasetSetting
+# from data_util import DatasetSetting
 from config import MyDefaultTrainingArguments
+
+from datasets import Dataset, IterableDataset
+
+
+class DatasetSetting:
+    """使用parquet文件的DatasetSetting"""
+    def __init__(self, per_eval_size, *args, **kwargs):
+        self.train_dataset = Dataset.from_parquet(
+            'data/processed/hf_saved/train.parquet',
+            cache_dir='data/cache',
+        )
+        self._eval_dataset = IterableDataset.from_parquet(
+            'data/processed/hf_saved/eval.parquet'
+        ).repeat(None)
+        self.eval_iter = None
+        self.per_eval_size = per_eval_size
+
+    @property
+    def eval_dataset(self):
+        if self.eval_iter is None:
+            self.reset_eval_iter()
+        return Dataset.from_dict(next(self.eval_iter))
+
+    @property
+    def test_dataset(self):
+        return self.eval_dataset
+
+    def reset_eval_iter(self):
+        self.eval_iter = self._eval_dataset.iter(self.per_eval_size)
+
 
 roc_auc_score = evaluate.load("roc_auc")
 

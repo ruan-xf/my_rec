@@ -136,6 +136,11 @@ def create_ds_setting(args: transformers.TrainingArguments, is_fast_dev_run: boo
     return ds_setting
 
 
+def create_ds_setting_parquet():
+    """使用parquet文件的DatasetSetting"""
+    return utils.DatasetSetting(48*80)
+
+
 def build_trainer_params(model, args, ds_setting, collate_fn, early_stop_patience=None):
     """
     构建 Trainer 参数字典
@@ -181,7 +186,7 @@ class FastDevRun:
         """执行fast_dev_run流程
         """
         # 小样本数据集
-        ds_setting = create_ds_setting(True)
+        ds_setting = create_ds_setting_parquet()
         # 构建训练器
         trainer_params = build_trainer_params(
             self.__class__.model_init(), self.train_args, ds_setting, collate_fn,

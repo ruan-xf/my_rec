@@ -7,7 +7,7 @@ import common
 import utils
 import config
 
-from common import create_ds_setting, build_trainer_params, collate_fn, setup_experiment
+from common import create_ds_setting_parquet, build_trainer_params, collate_fn, setup_experiment
 from modeling_mlp import model_init
 
 
@@ -30,7 +30,7 @@ class MLPTrainingArguments(config.MyDefaultTrainingArguments):
 def train():
     args = MLPTrainingArguments()
     args, _ = setup_experiment(args)
-    ds_setting = create_ds_setting()
+    ds_setting = create_ds_setting_parquet()
 
     trainer_params = build_trainer_params(
         model_init(), args, ds_setting, collate_fn,

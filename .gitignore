@@ -13,6 +13,8 @@ uv.lock
 .vscode/
 
 data/processed/full.parquet
+data/cache
+data/processed/hf_saved
 .env
 
 checkpoints
@@ -25,3 +27,4 @@ wandb
 # not use
 modeling.py
 train.py
+1.py
