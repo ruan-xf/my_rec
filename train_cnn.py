@@ -18,8 +18,10 @@ class CNNTrainingArguments(config.MyDefaultTrainingArguments):
     gradient_accumulation_steps: int = 1
     max_steps: int = 20000
     # warmup_ratio: float = 0.1
+    warmup_steps: int = 800
     learning_rate: float = 0.001
-    lr_scheduler_type: str = "constant"
+    # lr_scheduler_type: str = "constant"
+    lr_scheduler_type: str = "constant_with_warmup"
     fp16: bool = True
     logging_steps: int = 10
     save_steps: int = logging_steps * 10
@@ -38,7 +40,7 @@ def train():
     ds_setting = create_ds_setting_parquet()
 
     trainer_params = build_trainer_params(
-        model_init(), args, ds_setting, collate_fn,
+        model_init(kernel_size=6), args, ds_setting, collate_fn,
         early_stop_patience=3 * 6
     )
     trainer = utils.trainer_init(trainer_params, ds_setting)
@@ -47,5 +49,5 @@ def train():
         wandb.run.finish()
 
 
-CNNFastDevRun()()
-# train()
+# CNNFastDevRun()()
+train()

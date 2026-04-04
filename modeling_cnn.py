@@ -84,6 +84,6 @@ class CNNModel(PreTrainedModel, FeatureEmbeddingMixin):
         return {"logits": torch.sigmoid(logits)}
 
 
-def model_init():
-    return CNNModel(CNNConfig())
+def model_init(**kwargs):
+    return CNNModel(CNNConfig(**kwargs))
 

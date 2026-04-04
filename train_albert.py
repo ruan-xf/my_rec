@@ -1,10 +1,12 @@
 from dataclasses import dataclass
+import random
 import wandb
 
 import utils
 import config
 
-from common import setup_experiment, create_ds_setting_parquet, build_trainer_params, collate_fn, FastDevRun
+import common
+from common import setup_experiment, create_ds_setting, build_trainer_params, collate_fn, FastDevRun
 from modeling_albert import model_init
 
 
@@ -35,8 +37,11 @@ class AlbertFastDevRun(FastDevRun):
 
 def train():
     args = AlbertTrainingArguments()
-    # args, _ = setup_experiment(args)
-    ds_setting = create_ds_setting_parquet()
+    args, _ = setup_experiment(args)
+    ds_setting = create_ds_setting()
+    # for checkpoint resume
+    # random.shuffle(ds_setting.splits['train'])
+    # random.shuffle(ds_setting.splits['eval'])
 
     trainer_params = build_trainer_params(
         model_init(), args, ds_setting, collate_fn,
@@ -48,10 +53,10 @@ def train():
         wandb.run.finish()
 
 
-fast_dev_run = AlbertFastDevRun()
-# fast_dev_run.verbose = False
-fast_dev_run.delete_output = False
+# fast_dev_run = AlbertFastDevRun()
+# # fast_dev_run.verbose = False
+# fast_dev_run.delete_output = False
 
-fast_dev_run()
+# fast_dev_run()
 
-# train()
+train()

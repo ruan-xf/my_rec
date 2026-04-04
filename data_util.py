@@ -178,6 +178,9 @@ class DatasetSetting:
             lambda: self.generate_with_neg('train')
         )
 
+        tokenizer = transformers.AutoTokenizer.from_pretrained('tokenizers/item_id')
+        self.train_items = tokenizer.vocab.keys() - tokenizer.all_special_tokens
+
     def init_eval_dataset(self):
         self.indefinite_eval_dataset = IterableDataset.from_generator(
             lambda: self.generate_with_neg('eval')
@@ -213,6 +216,33 @@ class DatasetSetting:
     def reset_eval_iter(self):
         self.eval_iter = self.indefinite_eval_dataset.map(compose(self.map_for_test)).iter(self.per_eval_size)
 
+    def generate_samples(self, item_seq, n_sample, is_train):
+        items = [int(elem['item_id']) for elem in item_seq]
+        neg_items = self.train_items - set(items)
+        
+
+        # 由于 int() 始终返回 0，而哨兵值为 1（永不匹配），所以 iter(int, 1) 会生成一个无限迭代器，不断产出 0
+        def get_a_neg():
+            if not is_train:
+                return next(x for _ in iter(int, 1) if (x:=random.randint(*config.item_id_range)) not in items)
+
+            return random.choice(neg_items)
+
+        def get_a_sample(is_pos: bool):
+            item = config.get_a_empty()
+            item['item_id'] = str(items[-1] if is_pos else get_a_neg())
+            return {
+                # 'user': user,
+                'item_seq': item_seq[:-1] + [item],
+                # 'item': item,
+                # 'item_seq_len': n_items,
+                'label': is_pos + 0
+            }
+
+        # n_sample > 1
+        i_pos = random.randint(0, n_sample-1)
+        for i in range(n_sample):
+            yield get_a_sample(i == i_pos)
 
     def generate_with_neg(
         self,
@@ -239,32 +269,10 @@ class DatasetSetting:
             )
         )
         for item_seq, *_ in df.iter_rows():
-            items = [int(elem['item_id']) for elem in item_seq]
-            
+            # for i in range(1, len(item_seq)):
+            #     yield from self.generate_samples(item_seq[:i], 2)
 
-            # 由于 int() 始终返回 0，而哨兵值为 1（永不匹配），所以 iter(int, 1) 会生成一个无限迭代器，不断产出 0
-            def get_a_neg():
-                # x = next(x for _ in iter(int, 1) if (x:=random.randint(80, 5162429)) not in items)
-                x = next(x for _ in iter(int, 1) if (x:=random.randint(1, 5163070)) not in items)
-                return x
-
-            def get_a_sample(is_pos: bool):
-                item = config.get_a_empty()
-                item['item_id'] = str(items[-1] if is_pos else get_a_neg())
-                return {
-                    # 'user': user,
-                    'item_seq': item_seq[:-1] + [item],
-                    # 'item': item,
-                    # 'item_seq_len': n_items,
-                    'label': is_pos + 0
-                }
-
-            # n_sample > 1
-            i_pos = random.randint(0, n_sample-1)
-            for i in range(n_sample):
-                yield get_a_sample(i == i_pos)
-
-
+            yield from self.generate_samples(item_seq, n_sample, split_name == 'train')
 
 # save_full()
 # do_split()

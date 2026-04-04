@@ -123,7 +123,7 @@ def setup_experiment(args):
 
 
 
-def create_ds_setting(args: transformers.TrainingArguments, is_fast_dev_run: bool = False):
+def create_ds_setting(is_fast_dev_run: bool = False):
     eval_size = 48*80
     test_size = 48*300
 
@@ -186,7 +186,8 @@ class FastDevRun:
         """执行fast_dev_run流程
         """
         # 小样本数据集
-        ds_setting = create_ds_setting_parquet()
+        # ds_setting = create_ds_setting_parquet()
+        ds_setting = create_ds_setting(True)
         # 构建训练器
         trainer_params = build_trainer_params(
             self.__class__.model_init(), self.train_args, ds_setting, collate_fn,

@@ -1,61 +1,59 @@
 
-import dataclasses
-from datetime import datetime
+
 from functools import partial
 from pathlib import Path
-from typing import Callable
 import evaluate
 from scipy.special import softmax
-from torch import nn
 
 import torch
+from torch import nn
+
+import transformers
 from transformers import (
     Trainer, TrainingArguments,
     EarlyStoppingCallback, TrainerCallback,
-    logging,
+    # logging,
 )
 
 # logging.enable_progress_bar()  
 # logging.set_verbosity_info()
 
 import subprocess
-import webbrowser
+# import webbrowser
 from tqdm.auto import tqdm
-import transformers
-import wandb
+# import wandb
 
-from data_util import DatasetSetting as _DatasetSetting
-# from data_util import DatasetSetting
-from config import MyDefaultTrainingArguments
-
-from datasets import Dataset, IterableDataset
+from data_util import DatasetSetting
 
 
-class DatasetSetting:
-    """使用parquet文件的DatasetSetting"""
-    def __init__(self, per_eval_size, *args, **kwargs):
-        self.train_dataset = Dataset.from_parquet(
-            'data/processed/hf_saved/train.parquet',
-            cache_dir='data/cache',
-        )
-        self._eval_dataset = IterableDataset.from_parquet(
-            'data/processed/hf_saved/eval.parquet'
-        ).repeat(None)
-        self.eval_iter = None
-        self.per_eval_size = per_eval_size
+# 加载预处理的数据确实能加快训练
+# 但目前只有主观体验，希望之后能够从profiler直观看出这点
+# from datasets import Dataset, IterableDataset
+# class DatasetSetting:
+#     """使用parquet文件的DatasetSetting"""
+#     def __init__(self, per_eval_size, *args, **kwargs):
+#         self.train_dataset = Dataset.from_parquet(
+#             'data/processed/hf_saved/train.parquet',
+#             cache_dir='data/cache',
+#         )
+#         self._eval_dataset = IterableDataset.from_parquet(
+#             'data/processed/hf_saved/eval.parquet'
+#         ).repeat(None)
+#         self.eval_iter = None
+#         self.per_eval_size = per_eval_size
 
-    @property
-    def eval_dataset(self):
-        if self.eval_iter is None:
-            self.reset_eval_iter()
-        return Dataset.from_dict(next(self.eval_iter))
+#     @property
+#     def eval_dataset(self):
+#         if self.eval_iter is None:
+#             self.reset_eval_iter()
+#         return Dataset.from_dict(next(self.eval_iter))
 
-    @property
-    def test_dataset(self):
-        return self.eval_dataset
+#     @property
+#     def test_dataset(self):
+#         return self.eval_dataset
 
-    def reset_eval_iter(self):
-        self.eval_iter = self._eval_dataset.iter(self.per_eval_size)
+#     def reset_eval_iter(self):
+#         self.eval_iter = self._eval_dataset.iter(self.per_eval_size)
 
 
 roc_auc_score = evaluate.load("roc_auc")
@@ -172,19 +170,7 @@ class TensorBoardLauncherCallback(TrainerCallback):
 
         self.enabled = True
 
-        # from pathlib import Path
-        # from datetime import datetime
-
-        # # 1. 确定项目名和运行名，创建目录
-        # self.project_name = Path(args.output_dir).name
-        # self.run_name = datetime.now().strftime('%m%d-%H%M')
-        # self.run_log_dir = Path(self.log_root) / self.project_name / self.run_name
-        # # self.run_log_dir.mkdir(parents=True, exist_ok=True)
-
-        # # 2. 更新 args.logging_dir，让 transformers 直接写 tb_logs
-        # args.logging_dir = self.run_log_dir.as_posix()
-
-
+        # 在此处进行 project_name, run_name 的设置不会生效，所以提前设置了
         run_name = args.run_name
         project_name = Path(args.output_dir).name
         self.run_log_dir = Path(self.log_root) / project_name / run_name
@@ -192,14 +178,12 @@ class TensorBoardLauncherCallback(TrainerCallback):
         # 3. 启动 TensorBoard（可选）
         if not self.auto_launch: return
         try:
-            import subprocess
-            import webbrowser
             subprocess.Popen(
                 ["tensorboard", f"--logdir={self.log_root}", f"--port={self.port}"],
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
             )
-            webbrowser.open(f"http://localhost:{self.port}")
+            # webbrowser.open(f"http://localhost:{self.port}")
             print(f"✅ TensorBoard 已自动启动，访问: http://localhost:{self.port}")
             print(f"   项目: {project_name}, 运行: {run_name}")
             print(f"   日志目录: {self.run_log_dir}")
@@ -209,11 +193,6 @@ class TensorBoardLauncherCallback(TrainerCallback):
             print(f"   并访问: http://localhost:{self.port}")
 
         self.started = True
-
-
-# # alway get a copy of it 
-# def get_TrainingArguments_common_params():
-#     return MyDefaultTrainingArguments()
 
 def get_Trainer_common_params(model: nn.Module, args: TrainingArguments, ds_setting: DatasetSetting):
     do_convert = next(layer.out_features for layer in reversed(list(model.modules())) if isinstance(layer, nn.Linear)) != 1
@@ -240,4 +219,4 @@ def trainer_start(trainer: Trainer, ds_setting: DatasetSetting):
     trainer.evaluate()
     trainer.train()
     trainer.log_metrics('test', trainer.evaluate(ds_setting.test_dataset, metric_key_prefix='test'))
-    if wandb.run: wandb.run.finish()
+    # if wandb.run: wandb.run.finish()

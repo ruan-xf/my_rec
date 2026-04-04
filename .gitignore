@@ -8,23 +8,29 @@ wheels/
 
 # Virtual environments
 .venv
+
+# private or not general use
 uv.lock
-
 .vscode/
-
-data/processed/full.parquet
-data/cache
-data/processed/hf_saved
 .env
 
-checkpoints
+# to large, need to copy manually or regenerate
+data/processed/full.parquet
+data/processed/hf_saved
+
 
 # logs
+checkpoints
 trainer_output
 wandb
+data/cache
 
 
 # not use
 modeling.py
 train.py
 1.py
+
+
+# not show
+关于bst
