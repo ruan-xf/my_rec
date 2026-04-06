@@ -38,7 +38,6 @@ def train():
     args = AlbertTrainingArguments()
     args, _ = setup_experiment(args)
     ds_setting = create_ds_setting_parquet()
-    ds_setting.train_dataset = ds_setting.train_dataset.to_iterable_dataset()
     # for checkpoint resume
     # random.shuffle(ds_setting.splits['train'])
     # random.shuffle(ds_setting.splits['eval'])

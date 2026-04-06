@@ -51,15 +51,3 @@ def main():
 if __name__ == '__main__':
     main()
 
-
-
-# saving train...
-# 554it [43:40,  4.73s/it]
-#   done: 5532594 rows, size=1224.9 MB
-# saving eval...
-# 9it [04:14, 28.30s/it]
-#   done: 88918 rows, size=64.0 MB
-# saving test...
-# 21it [09:00, 25.74s/it]
-#   done: 207478 rows, size=150.1 MB
-# all done!

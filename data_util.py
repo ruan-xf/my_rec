@@ -229,15 +229,15 @@ class DatasetSetting:
         item_seq = pd.DataFrame(item_seq).astype(str).to_dict(orient='records')
         history_seq = item_seq[:-1]
         
-        if not is_train: yield {'item_seq': item_seq, 'label': 1.0}
+        # if not is_train: yield {'item_seq': item_seq, 'label': 1.0}
 
         sample_results = []
         if is_train:
             # 训练时使用多种采样组合
             sample_results = sampling.generate_train_samples(target_item)
-        # else:
-        #     # 验证/测试时只使用真实正样本
-        #     sample_results = sampling.generate_eval_sample(target_item)
+        else:
+            # 验证/测试时只使用真实正样本
+            sample_results = sampling.generate_eval_sample(target_item)
 
         for result in sample_results:
             if result is None: continue

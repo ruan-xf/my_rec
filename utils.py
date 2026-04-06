@@ -33,18 +33,14 @@ class DatasetSetting:
     """使用parquet文件的DatasetSetting"""
     def __init__(self, per_eval_size, *args, **kwargs):
         self.train_dataset = self.load_data('train')
-        self._eval_dataset = IterableDataset.from_parquet(
-            'data/processed/hf_saved/eval.parquet'
-        ).repeat(None)
-
+        self._eval_dataset = self.load_data('eval').repeat(None)
         self.test_dataset = self.load_data('test')
         self.eval_iter = None
         self.per_eval_size = per_eval_size
 
     def load_data(self, split: str):
-        return Dataset.from_parquet(
+        return IterableDataset.from_parquet(
             f'data/processed/hf_saved/{split}.parquet',
-            cache_dir='data/cache',
         )
 
     @property
