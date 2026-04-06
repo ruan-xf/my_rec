@@ -18,7 +18,7 @@ import utils
 
 seq_features = global_config.seq_features
 
-feature_encoders: dict[str, transformers.AlbertTokenizerFast] = {
+feature_encoders: dict[str, transformers.AlbertTokenizer] = {
     col: transformers.AutoTokenizer.from_pretrained(
         f'tokenizers/{col}',
         truncation_side='left',
@@ -38,6 +38,7 @@ def collate_fn(batch):
             padding=True,
             truncation=True,
             return_tensors='pt',
+            return_token_type_ids=True,
         )
         features[col] = out.input_ids
         if col == 'item_id': atten_dic = out
@@ -98,7 +99,7 @@ class FeatureEmbeddingMixin:
 
 # ==================== 训练流程通用函数 ====================
 
-def setup_experiment(args):
+def setup_experiment(args: transformers.TrainingArguments):
     """
     配置实验：
     目前为正式的多模型比较前的调参尝试
@@ -117,7 +118,9 @@ def setup_experiment(args):
     # self.run_log_dir.mkdir(parents=True, exist_ok=True)
 
     # 2. 更新 args.logging_dir，让 transformers 直接写 tb_logs
-    args.logging_dir = run_log_dir.as_posix()
+    # args.logging_dir = run_log_dir.as_posix()
+    # "Deprecated and will be removed in v5.2. Set env var `TENSORBOARD_LOGGING_DIR` instead.
+    os.environ['TENSORBOARD_LOGGING_DIR'] = run_log_dir.as_posix()
 
     return args, project_name
 

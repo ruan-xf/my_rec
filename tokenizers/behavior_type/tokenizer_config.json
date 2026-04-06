@@ -53,7 +53,7 @@
   "pad_token": "<pad>",
   "remove_space": true,
   "sep_token": "[SEP]",
-  "tokenizer_class": "AlbertTokenizerFast",
+  "tokenizer_class": "PreTrainedTokenizerFast",
   "truncation_side": "left",
   "unk_token": "<unk>"
 }

@@ -14,7 +14,7 @@ dependencies = [
     "setuptools<82",
     "tensorboard>=2.20.0",
     "torchvision>=0.25.0",
-    "transformers[torch]<4.59",
+    "transformers[torch]>=5.5.0",
     "wandb>=0.25.0",
 ]
 
@@ -30,6 +30,7 @@ cu126 = [
 ]
 
 [tool.uv]
+index-url = "https://pypi.tuna.tsinghua.edu.cn/simple"
 conflicts = [
   [
     { extra = "cpu" },
