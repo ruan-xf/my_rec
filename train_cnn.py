@@ -18,7 +18,7 @@ class CNNTrainingArguments(config.MyDefaultTrainingArguments):
     max_steps: int = 20000
     # warmup_ratio: float = 0.1
     warmup_steps: int = 800
-    learning_rate: float = 0.001
+    learning_rate: float = 1e-2
     # lr_scheduler_type: str = "constant"
     lr_scheduler_type: str = "constant_with_warmup"
     fp16: bool = True
@@ -46,5 +46,5 @@ def train():
     trainer.train()
 
 
-CNNFastDevRun()()
-# train()
+# CNNFastDevRun()()
+train()

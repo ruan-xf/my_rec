@@ -30,8 +30,8 @@ class RecConfig(AlbertConfig):
         hidden_size = num_attention_heads * 64
         intermediate_size = hidden_size*4
         super().__init__(
-            # hidden_dropout_prob=dropout,
-            # attention_probs_dropout_prob=dropout,
+            hidden_dropout_prob=dropout,
+            attention_probs_dropout_prob=dropout,
             classifier_dropout_prob=dropout,
             num_attention_heads=num_attention_heads,
             hidden_size=hidden_size,

@@ -5,7 +5,7 @@ import utils
 import config
 
 import common
-from common import setup_experiment, create_ds_setting, build_trainer_params, collate_fn, FastDevRun
+from common import setup_experiment, create_ds_setting_parquet, build_trainer_params, collate_fn, FastDevRun
 from modeling_albert import model_init
 
 
@@ -18,8 +18,8 @@ class AlbertTrainingArguments(config.MyDefaultTrainingArguments):
     max_steps: int = 20000
     # warmup_ratio: float = 0.1
     # learning_rate: float = 0.001
-    warmup_steps: int = 1600
-    learning_rate: float = 2e-4
+    warmup_steps: int = 800
+    learning_rate: float = 1e-3
     lr_scheduler_type: str = "constant_with_warmup"
     fp16: bool = True
     logging_steps: int = 10
@@ -37,7 +37,8 @@ class AlbertFastDevRun(FastDevRun):
 def train():
     args = AlbertTrainingArguments()
     args, _ = setup_experiment(args)
-    ds_setting = create_ds_setting()
+    ds_setting = create_ds_setting_parquet()
+    ds_setting.train_dataset = ds_setting.train_dataset.to_iterable_dataset()
     # for checkpoint resume
     # random.shuffle(ds_setting.splits['train'])
     # random.shuffle(ds_setting.splits['eval'])
@@ -50,11 +51,11 @@ def train():
     trainer.train()
 
 
-AlbertFastDevRun()()
+# AlbertFastDevRun()()
 # fast_dev_run = AlbertFastDevRun()
 # # fast_dev_run.verbose = False
 # fast_dev_run.delete_output = False
 
 # fast_dev_run()
 
-# train()
+train()

@@ -44,7 +44,7 @@ class MLPFastDevRun(common.FastDevRun):
     args_class = MLPTrainingArguments
 
 
-MLPFastDevRun()()
+# MLPFastDevRun()()
 
 
 # fast_dev_run = MLPFastDevRun()
@@ -53,4 +53,4 @@ MLPFastDevRun()()
 
 # fast_dev_run()
 
-# train()
+train()
