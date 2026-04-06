@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 import shutil
 import transformers
-import wandb
 
 import utils
 import config
@@ -45,9 +44,7 @@ def train():
     )
     trainer = utils.trainer_init(trainer_params, ds_setting)
     trainer.train()
-    if wandb.run:
-        wandb.run.finish()
 
 
-# CNNFastDevRun()()
-train()
+CNNFastDevRun()()
+# train()

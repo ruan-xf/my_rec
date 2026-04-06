@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 import shutil
 import transformers
-import wandb
 
 import common
 import utils
@@ -38,8 +37,6 @@ def train():
     )
     trainer = utils.trainer_init(trainer_params, ds_setting)
     trainer.train()
-    if wandb.run:
-        wandb.run.finish()
 
 
 class MLPFastDevRun(common.FastDevRun):
@@ -47,7 +44,7 @@ class MLPFastDevRun(common.FastDevRun):
     args_class = MLPTrainingArguments
 
 
-# MLPFastDevRun()()
+MLPFastDevRun()()
 
 
 # fast_dev_run = MLPFastDevRun()
@@ -56,4 +53,4 @@ class MLPFastDevRun(common.FastDevRun):
 
 # fast_dev_run()
 
-train()
+# train()

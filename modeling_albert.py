@@ -18,7 +18,7 @@ class RecConfig(AlbertConfig):
         self,
         num_attention_heads=8,
         embedding_size=60,
-        num_labels=2,
+        num_labels=1,  # 使用连续标签，设置为1
         dropout=0.1,
         feature_vocab_sizes=config.feature_vocab_sizes,
         **kwargs
@@ -60,12 +60,14 @@ class AlbertRec(transformers.PreTrainedModel, FeatureEmbeddingMixin):
 
         inputs_embeds = self.albert_classifier.albert.embeddings(inputs_embeds=concated)
 
-        return self.albert_classifier.forward(
+        out = self.albert_classifier.forward(
             inputs_embeds=inputs_embeds,
             attention_mask=attention_mask,
             token_type_ids=token_type_ids,
             labels=labels
         )
+        out.logits = out.logits.squeeze(-1)
+        return out
 
 
 def model_init():

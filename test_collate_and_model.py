@@ -11,12 +11,12 @@ import transformers
 from transformers import TrainingArguments, PreTrainedModel, PretrainedConfig, Trainer
 
 
-# from modeling import AlbertRec, RecConfig
-import modeling
-from data_util import DatasetSetting
+import common
+import utils
 import config
 
-from modeling import seq_features, feature_encoders
+import modeling_albert, modeling_cnn, modeling_mlp
+
 
 # 1. 原样返回的collate_fn，用于了解处理的batch
 def identity_collate_fn(batch):
@@ -55,19 +55,19 @@ def get_batch_from_dataset(is_identity=True):
     )
     
     # 创建DatasetSetting
-    ds_setting = DatasetSetting(900, use_sample=True)
+    ds_setting = utils.DatasetSetting(900, use_sample=True)
     
     # 选择collate_fn
     if is_identity:
         collate_fn_to_use = identity_collate_fn
     else:
-        collate_fn_to_use = modeling.collate_fn
+        collate_fn_to_use = common.collate_fn
     
     # 创建Trainer和DataLoader
     trainer = Trainer(
         demo_model,
         args=args,
-        eval_dataset=ds_setting.eval_dataset,
+        eval_dataset=ds_setting.train_dataset,
         data_collator=collate_fn_to_use,
     )
     
@@ -76,54 +76,10 @@ def get_batch_from_dataset(is_identity=True):
     
     return batch
 
-# get_batch_from_dataset(True)
-# [{'item_seq': [{'behavior_type': 'pv',
-#     'category_id': '3323023',
-#     'item_id': '4071389'},
-#    {'behavior_type': 'pv', 'category_id': '4193511', 'item_id': '1340579'},
-#    {'behavior_type': 'pv', 'category_id': '1248986', 'item_id': '1790164'},
-#    {'behavior_type': 'pv', 'category_id': '3597057', 'item_id': '1826838'},
-#    {'behavior_type': 'pv', 'category_id': '135038', 'item_id': '4602800'},
-#    {'behavior_type': 'pv', 'category_id': '4445129', 'item_id': '756621'},
-#    {'behavior_type': 'pv', 'category_id': '3284512', 'item_id': '1361723'},
-#    {'behavior_type': 'pv', 'category_id': '3284512', 'item_id': '2019994'},
-#    {'behavior_type': 'pv', 'category_id': '153309', 'item_id': '1743327'},
-#    {'behavior_type': '<pad>', 'category_id': '<pad>', 'item_id': '2276118'}],
-#   'label': 1},
-#  {'item_seq': [{'behavior_type': 'pv',
-#     'category_id': '3323023',
-#     'item_id': '4071389'},
-#    {'behavior_type': 'pv', 'category_id': '4193511', 'item_id': '1340579'},
-#    {'behavior_type': 'pv', 'category_id': '1248986', 'item_id': '1790164'},
-#    {'behavior_type': 'pv', 'category_id': '3597057', 'item_id': '1826838'},
-#    {'behavior_type': 'pv', 'category_id': '135038', 'item_id': '4602800'},
-#    {'behavior_type': 'pv', 'category_id': '4445129', 'item_id': '756621'},
-#    {'behavior_type': 'pv', 'category_id': '3284512', 'item_id': '1361723'},
-#    {'behavior_type': 'pv', 'category_id': '3284512', 'item_id': '2019994'},
-#    {'behavior_type': 'pv', 'category_id': '153309', 'item_id': '1743327'},
-#    {'behavior_type': '<pad>', 'category_id': '<pad>', 'item_id': '209806'}],
-#   'label': 0}]
-
-# get_batch_from_dataset(False)
-# {'behavior_type': tensor([[8, 8, 8, 8, 8, 8, 8, 8, 8, 0],
-#          [8, 8, 8, 8, 8, 8, 8, 8, 8, 0]]),
-#  'category_id': tensor([[4675, 6442,  487, 5233,  671, 6947, 4594, 4594, 1055,    0],
-#          [4675, 6442,  487, 5233,  671, 6947, 4594, 4594, 1055,    0]]),
-#  'item_id': tensor([[2414391,  267490,  620711,  649490, 2831990, 3460913,  284047,  801278,
-#                 1, 1002840],
-#          [2414391,  267490,  620711,  649490, 2831990, 3460913,  284047,  801278,
-#                 1,  862600]]),
-#  'token_type_ids': tensor([[0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-#          [0, 0, 0, 0, 0, 0, 0, 0, 0, 1]]),
-#  'attention_mask': tensor([[1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-#          [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]]),
-#  'labels': tensor([1, 0])}
-
-def test_model_forward():
+def test_model_forward(model):
     processed_batch = get_batch_from_dataset(False)
 
     # 创建模型并测试
-    model = modeling.model_init()
     model.eval()  # 设置为评估模式
     
     with torch.no_grad():
@@ -132,3 +88,15 @@ def test_model_forward():
 
     return output
 
+
+
+# get_batch_from_dataset(True)
+# get_batch_from_dataset(False)
+# test_model_forward(modeling_mlp.model_init())
+# test_model_forward(modeling_cnn.model_init())
+# test_model_forward(modeling_albert.model_init())
+
+# {'loss': tensor(0.3383), 'logits': tensor([-0.0223, -0.0214])}
+
+# SequenceClassifierOutput(loss=tensor(0.4532), logits=tensor([[-0.1409],
+#         [-0.1451]]), hidden_states=None, attentions=None)

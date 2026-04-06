@@ -78,10 +78,10 @@ class CNNModel(PreTrainedModel, FeatureEmbeddingMixin):
         logits = self.mlp(pooled).squeeze(-1)
 
         if labels is not None:
-            loss = nn.BCEWithLogitsLoss()(logits, labels.float())
-            return {"loss": loss, "logits": torch.sigmoid(logits)}
+            loss = nn.MSELoss()(logits, labels.float())
+            return {"loss": loss, "logits": logits}
 
-        return {"logits": torch.sigmoid(logits)}
+        return {"logits": logits}
 
 
 def model_init(**kwargs):

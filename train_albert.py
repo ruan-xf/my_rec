@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 import random
-import wandb
 
 import utils
 import config
@@ -49,14 +48,13 @@ def train():
     )
     trainer = utils.trainer_init(trainer_params, ds_setting)
     trainer.train()
-    if wandb.run:
-        wandb.run.finish()
 
 
+AlbertFastDevRun()()
 # fast_dev_run = AlbertFastDevRun()
 # # fast_dev_run.verbose = False
 # fast_dev_run.delete_output = False
 
 # fast_dev_run()
 
-train()
+# train()

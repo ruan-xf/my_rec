@@ -8,9 +8,9 @@ class MyDefaultTrainingArguments(TrainingArguments):
     auto_find_batch_size: bool = True
     max_steps: int =100000
     eval_strategy: str = 'steps'
-    metric_for_best_model: str = 'eval_roc_auc'
+    metric_for_best_model: str = 'eval_mse'
     load_best_model_at_end: bool = True
-    greater_is_better: bool = True
+    greater_is_better: bool = False  # MSE越小越好
     save_total_limit: int = 2
     report_to: str = 'tensorboard'
 

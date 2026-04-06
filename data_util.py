@@ -18,6 +18,7 @@ import torch
 import transformers
 
 import config
+import sampling
 
 
 def convert_raw():
@@ -178,9 +179,6 @@ class DatasetSetting:
             lambda: self.generate_with_neg('train')
         )
 
-        tokenizer = transformers.AutoTokenizer.from_pretrained('tokenizers/item_id')
-        self.train_items = tokenizer.vocab.keys() - tokenizer.all_special_tokens
-
     def init_eval_dataset(self):
         self.indefinite_eval_dataset = IterableDataset.from_generator(
             lambda: self.generate_with_neg('eval')
@@ -188,7 +186,7 @@ class DatasetSetting:
         
     def init_test_dataset(self):
         self._test_dataset = IterableDataset.from_generator(
-            lambda: self.generate_with_neg('test', n_sample=2)
+            lambda: self.generate_with_neg('test')
         )
         
     @property
@@ -216,39 +214,46 @@ class DatasetSetting:
     def reset_eval_iter(self):
         self.eval_iter = self.indefinite_eval_dataset.map(compose(self.map_for_test)).iter(self.per_eval_size)
 
-    def generate_samples(self, item_seq, n_sample, is_train):
-        items = [int(elem['item_id']) for elem in item_seq]
-        neg_items = self.train_items - set(items)
+    def generate_samples(self, item_seq, is_train):
+        """
+        使用新的采样策略生成样本
+
+        Args:
+            item_seq: 物品序列
+            is_train: 是否为训练集
+
+        Yields:
+            格式化的样本字典，包含 item_seq 和 label
+        """
+        target_item = item_seq[-1]
+        item_seq = pd.DataFrame(item_seq).astype(str).to_dict(orient='records')
+        history_seq = item_seq[:-1]
         
+        if not is_train: yield {'item_seq': item_seq, 'label': 1.0}
 
-        # 由于 int() 始终返回 0，而哨兵值为 1（永不匹配），所以 iter(int, 1) 会生成一个无限迭代器，不断产出 0
-        def get_a_neg():
-            if not is_train:
-                return next(x for _ in iter(int, 1) if (x:=random.randint(*config.item_id_range)) not in items)
+        sample_results = []
+        if is_train:
+            # 训练时使用多种采样组合
+            sample_results = sampling.generate_train_samples(target_item)
+        # else:
+        #     # 验证/测试时只使用真实正样本
+        #     sample_results = sampling.generate_eval_sample(target_item)
 
-            return random.choice(neg_items)
+        for result in sample_results:
+            if result is None: continue
+            # 构建新的 item_seq，将采样结果作为最后一个物品
+            new_item = config.get_a_empty()
+            new_item['item_id'] = str(result['item'])
+            new_item['category_id'] = str(result['category'])
 
-        def get_a_sample(is_pos: bool):
-            item = config.get_a_empty()
-            item['item_id'] = str(items[-1] if is_pos else get_a_neg())
-            return {
-                # 'user': user,
-                'item_seq': item_seq[:-1] + [item],
-                # 'item': item,
-                # 'item_seq_len': n_items,
-                'label': is_pos + 0
+            yield {
+                'item_seq': history_seq + [new_item],
+                'label': result['label']
             }
-
-        # n_sample > 1
-        i_pos = random.randint(0, n_sample-1)
-        for i in range(n_sample):
-            yield get_a_sample(i == i_pos)
 
     def generate_with_neg(
         self,
         split_name: str,
-        *,
-        n_sample=5,
     ):
         if self.use_sample:
             # 使用 sample 数据时，直接读取对应的 parquet 文件
@@ -257,22 +262,8 @@ class DatasetSetting:
             # 使用 full 数据时，使用索引切片
             df: pl.DataFrame = self.full_df[self.splits[split_name]]
 
-        df = (
-            df
-            .select(
-                pl.col('item_seq').list.eval(
-                    pl.element().struct.with_fields(*(
-                        pl.field(col).cast(str)
-                        for col in config.seq_features
-                    ))
-                )
-            )
-        )
-        for item_seq, *_ in df.iter_rows():
-            # for i in range(1, len(item_seq)):
-            #     yield from self.generate_samples(item_seq[:i], 2)
-
-            yield from self.generate_samples(item_seq, n_sample, split_name == 'train')
+        for item_seq, *_ in df.select('item_seq').iter_rows():
+            yield from self.generate_samples(item_seq, split_name == 'train')
 
 # save_full()
 # do_split()

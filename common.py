@@ -136,9 +136,18 @@ def create_ds_setting(is_fast_dev_run: bool = False):
     return ds_setting
 
 
-def create_ds_setting_parquet():
+def create_ds_setting_parquet(is_fast_dev_run: bool = False):
     """使用parquet文件的DatasetSetting"""
-    return utils.DatasetSetting(48*80)
+    eval_size = 48*80
+    test_size = 48*300
+
+    if is_fast_dev_run:
+        eval_size = 20
+        test_size = 20
+
+    ds_setting = utils.DatasetSetting(eval_size)
+    ds_setting.test_dataset = ds_setting.test_dataset.take(test_size)
+    return ds_setting
 
 
 def build_trainer_params(model, args, ds_setting, collate_fn, early_stop_patience=None):
@@ -186,8 +195,8 @@ class FastDevRun:
         """执行fast_dev_run流程
         """
         # 小样本数据集
-        # ds_setting = create_ds_setting_parquet()
-        ds_setting = create_ds_setting(True)
+        ds_setting = create_ds_setting_parquet(True)
+        # ds_setting = create_ds_setting(True)
         # 构建训练器
         trainer_params = build_trainer_params(
             self.__class__.model_init(), self.train_args, ds_setting, collate_fn,

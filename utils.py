@@ -23,40 +23,43 @@ import subprocess
 from tqdm.auto import tqdm
 # import wandb
 
-from data_util import DatasetSetting
+# from data_util import DatasetSetting
 
 
 # 加载预处理的数据确实能加快训练
 # 但目前只有主观体验，希望之后能够从profiler直观看出这点
-# from datasets import Dataset, IterableDataset
-# class DatasetSetting:
-#     """使用parquet文件的DatasetSetting"""
-#     def __init__(self, per_eval_size, *args, **kwargs):
-#         self.train_dataset = Dataset.from_parquet(
-#             'data/processed/hf_saved/train.parquet',
-#             cache_dir='data/cache',
-#         )
-#         self._eval_dataset = IterableDataset.from_parquet(
-#             'data/processed/hf_saved/eval.parquet'
-#         ).repeat(None)
-#         self.eval_iter = None
-#         self.per_eval_size = per_eval_size
+from datasets import Dataset, IterableDataset
+class DatasetSetting:
+    """使用parquet文件的DatasetSetting"""
+    def __init__(self, per_eval_size, *args, **kwargs):
+        self.train_dataset = self.load_data('train')
+        self._eval_dataset = IterableDataset.from_parquet(
+            'data/processed/hf_saved/eval.parquet'
+        ).repeat(None)
 
-#     @property
-#     def eval_dataset(self):
-#         if self.eval_iter is None:
-#             self.reset_eval_iter()
-#         return Dataset.from_dict(next(self.eval_iter))
+        self.test_dataset = self.load_data('test')
+        self.eval_iter = None
+        self.per_eval_size = per_eval_size
 
-#     @property
-#     def test_dataset(self):
-#         return self.eval_dataset
+    def load_data(self, split: str):
+        return Dataset.from_parquet(
+            f'data/processed/hf_saved/{split}.parquet',
+            cache_dir='data/cache',
+        )
 
-#     def reset_eval_iter(self):
-#         self.eval_iter = self._eval_dataset.iter(self.per_eval_size)
+    @property
+    def eval_dataset(self):
+        if self.eval_iter is None:
+            self.reset_eval_iter()
+        return Dataset.from_dict(next(self.eval_iter))
+
+    def reset_eval_iter(self):
+        self.eval_iter = self._eval_dataset.iter(self.per_eval_size)
 
 
 roc_auc_score = evaluate.load("roc_auc")
+mse_metric = evaluate.load("mse")
+mae_metric = evaluate.load("mae")
 
 
 # logits = [[ 1.4070835, -1.4878857],
@@ -74,18 +77,24 @@ def convert_to_single_output(logits):
     
 
 # eval_roc_auc
-def compute_metrics(eval_pred, do_convert: bool):
-    # 获取预测的logits和真实标签
-    logits, labels = eval_pred
-    pred_scores = convert_to_single_output(logits) if do_convert else logits
-    
-    # 构建metric输入
-    metric_inputs = {
-        "prediction_scores": pred_scores,
-        "references": labels
+def compute_metrics(eval_pred):
+    """
+    新的指标计算函数：使用MSE和MAE
+    适用于[0,1]连续标签的采样策略
+
+    Args:
+        eval_pred: (predictions, labels) 元组
+                   predictions 已经是经过sigmoid后的[0,1]概率值
+    """
+    predictions, labels = eval_pred
+
+    mse_result = mse_metric.compute(predictions=predictions, references=labels)
+    mae_result = mae_metric.compute(predictions=predictions, references=labels)
+
+    return {
+        'mse': mse_result['mse'],
+        'mae': mae_result['mae'],
     }
-    
-    return roc_auc_score.compute(**metric_inputs)
 
 class TestTqdmCallback(TrainerCallback):
     def __init__(self):
@@ -195,13 +204,12 @@ class TensorBoardLauncherCallback(TrainerCallback):
         self.started = True
 
 def get_Trainer_common_params(model: nn.Module, args: TrainingArguments, ds_setting: DatasetSetting):
-    do_convert = next(layer.out_features for layer in reversed(list(model.modules())) if isinstance(layer, nn.Linear)) != 1
     return dict(
         model = model,
         args = args,
         train_dataset = ds_setting.train_dataset,
         eval_dataset = ds_setting.eval_dataset,
-        compute_metrics = partial(compute_metrics, do_convert=do_convert),
+        compute_metrics = compute_metrics,
         callbacks = [
             EarlyStoppingCallback(early_stopping_patience=3),
             TestTqdmCallback(),
