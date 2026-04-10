@@ -1,49 +1,22 @@
 
-from transformers import PretrainedConfig, PreTrainedModel
+
+from transformers import PreTrainedModel
 
 import torch
 from torch import nn
 from torchvision.ops import MLP
-import config
 
-from common import (
-    seq_features,
-    FeatureEmbeddingMixin,
-)
+import common
 
+class MLPModel(PreTrainedModel, common.FeatureEmbeddingMixin):
+    config_class = common.MLPConfig
 
-class MLPConfig(PretrainedConfig):
-    model_type = "mlp"
-
-    def __init__(
-        self, *,
-        feature_vocab_sizes=config.feature_vocab_sizes,
-        embedding_size: int = 60,
-        hidden_channels=[128, 64, 32],
-        activation_layer='relu',
-        dropout=0.1,
-        pad_token_id=0,
-        **kwargs,
-    ):
-        assert embedding_size % len(seq_features) == 0
-        self.feature_vocab_sizes = feature_vocab_sizes
-        self.embedding_size = embedding_size
-        self.hidden_channels = hidden_channels
-        self.activation_layer = activation_layer
-        self.dropout = dropout
-        self.pad_token_id = pad_token_id
-        super().__init__(**kwargs)
-
-
-class MLPModel(PreTrainedModel, FeatureEmbeddingMixin):
-    config_class = MLPConfig
-
-    def __init__(self, config: MLPConfig):
+    def __init__(self, config: common.MLPConfig):
         super().__init__(config)
+        self.all_tied_weights_keys = {}  # transformers 5.5+ 要求
 
         self._init_feature_embeddings(config)
 
-        assert config.activation_layer in ['relu', 'tanh']
         activation_layer = torch.nn.Tanh if config.activation_layer == 'tanh' else torch.nn.ReLU
 
         self.mlp = MLP(
@@ -75,5 +48,5 @@ class MLPModel(PreTrainedModel, FeatureEmbeddingMixin):
 
 
 def model_init():
-    return MLPModel(MLPConfig())
+    return MLPModel(common.MLPConfig())
 

@@ -1,54 +1,48 @@
-
+import torch
 import transformers
-import config
-
 from transformers.models.albert.modeling_albert import (
     AlbertForSequenceClassification,
     AlbertConfig,
 )
 
-from common import (
-    seq_features,
-    FeatureEmbeddingMixin,
-)
+import common
 
 
-class RecConfig(AlbertConfig):
-    def __init__(
-        self,
-        num_attention_heads=8,
-        embedding_size=60,
-        num_labels=1,  # 使用连续标签，设置为1
-        dropout=0.1,
-        feature_vocab_sizes=config.feature_vocab_sizes,
-        **kwargs
-    ):
-        assert embedding_size % len(seq_features) == 0
-        # 1. hidden_size 必须得是 num_attention_heads 的整数倍
-        # 2. ALBERT 的 FFN 中间层维度通常是 hidden_size * 4
-        # 也与预训练权重的设置进行了对比
-        hidden_size = num_attention_heads * 64
-        intermediate_size = hidden_size*4
-        super().__init__(
-            hidden_dropout_prob=dropout,
-            attention_probs_dropout_prob=dropout,
-            classifier_dropout_prob=dropout,
-            num_attention_heads=num_attention_heads,
-            hidden_size=hidden_size,
-            embedding_size=embedding_size,
-            num_labels=num_labels,
-            intermediate_size=intermediate_size,
-            **kwargs
-        )
-        self.dropout = dropout
-        self.feature_vocab_sizes = feature_vocab_sizes
+# python MRO，AlbertConfig的同名属性会被"遮蔽"（shadowed）
+# 注意 PretrainedConfig.__post_init__ 中会覆盖 num_labels
+# 而且 problem_type = regression 时 num_labels = 1 不合理？也会覆盖
+class RecConfig(common.ModelConfig, AlbertConfig):
+    num_attention_heads: int =8
+    num_labels: int =1  # 使用连续标签，设置为1
+    problem_type: str = 'regression'
+    # 1. hidden_size 必须得是 num_attention_heads 的整数倍
+    # 2. ALBERT 的 FFN 中间层维度通常是 hidden_size * 4
+    # 也与预训练权重的设置进行了对比
+    hidden_size: int = num_attention_heads * 64
+    intermediate_size: int = hidden_size*4
+    hidden_dropout_prob: int | float = -1
+    attention_probs_dropout_prob: int | float = -1
+    classifier_dropout_prob: int | float = -1
+    embedding_weight_decay: float = 0.0  # embedding L2 正则系数
 
+    def __post_init__(self, **kwargs):
+        super().__post_init__()
+        self.num_labels = self.__class__.num_labels
+        # 只有当值未设置时才使用 dropout 的默认值
+        if self.hidden_dropout_prob == -1:
+            self.hidden_dropout_prob = self.dropout
+        if self.attention_probs_dropout_prob == -1:
+            self.attention_probs_dropout_prob = self.dropout
+        if self.classifier_dropout_prob == -1:
+            self.classifier_dropout_prob = self.dropout
 
-class AlbertRec(transformers.PreTrainedModel, FeatureEmbeddingMixin):
+class AlbertRec(transformers.PreTrainedModel, common.FeatureEmbeddingMixin):
     config_class = RecConfig
 
-    def __init__(self, config: RecConfig):
+    def __init__(self, config):
         super().__init__(config)
+        self.config: RecConfig
+        self.all_tied_weights_keys = {}  # transformers 5.5+ 要求
 
         self._init_feature_embeddings(config)
 
@@ -67,9 +61,19 @@ class AlbertRec(transformers.PreTrainedModel, FeatureEmbeddingMixin):
             labels=labels
         )
         out.logits = out.logits.squeeze(-1)
+
+        # 添加 embedding L2 正则
+        if self.config.embedding_weight_decay > 0 and out.loss is not None:
+            l2_reg = sum(
+                torch.norm(embedding.weight, p=2)
+                for embedding in self.feature_embeddings
+            )
+            out.loss = out.loss + self.config.embedding_weight_decay * l2_reg
+
         return out
 
 
 def model_init():
     return AlbertRec(RecConfig())
+
 

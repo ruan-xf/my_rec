@@ -1,22 +1,39 @@
 
 from datetime import datetime
 import shutil
-from typing import Type
+from typing import Literal, Type
+from pathlib import Path
+import os
 
 import pandas as pd
 import torch
 import transformers
-from dataclasses import dataclass
-from pathlib import Path
-import os
+from dataclasses import dataclass, field
+from huggingface_hub.dataclasses import strict
 
 import config as global_config
+from config import seq_features
 import utils
 
+@strict
+class ModelConfig(transformers.PretrainedConfig):
+    feature_vocab_sizes = global_config.feature_vocab_sizes
+    pad_token_id = global_config.added_tokens_encoder['<pad>']
+    embedding_size: int=60
+    dropout: int | float =0.1
+
+    def __post_init__(self, **kwargs):
+        super().__post_init__()
+        assert self.embedding_size % len(seq_features) == 0
+
+
+class MLPConfig(ModelConfig):
+    model_type = "mlp"
+    hidden_channels: list[int] = field(default_factory=lambda: [128, 64, 32])
+    activation_layer: Literal['relu', 'tanh']='relu'
 
 # ==================== 数据处理相关 ====================
 
-seq_features = global_config.seq_features
 
 feature_encoders: dict[str, transformers.AlbertTokenizer] = {
     col: transformers.AutoTokenizer.from_pretrained(
@@ -65,7 +82,7 @@ class FeatureEmbeddingMixin:
     """
     特征embedding混合类，供MLP、CNN等模型复用
     """
-    def _init_feature_embeddings(self, config):
+    def _init_feature_embeddings(self, config: ModelConfig):
         """
         初始化特征embedding层
 
@@ -206,6 +223,8 @@ class FastDevRun:
             early_stop_patience=self.early_stop_patience
         )
         trainer = utils.trainer_init(trainer_params, ds_setting)
+        self.trainer = trainer
+        self.ds_setting = ds_setting
         # 执行测试
         if self.verbose:
             transformers.logging.set_verbosity_debug()
