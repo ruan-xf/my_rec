@@ -28,6 +28,7 @@ feature_vocab_sizes = {'behavior_type': 9, 'category_id': 9277, 'item_id': 36522
 # item_id 总范围（数据范围需要进一步确认）
 item_id_range = (1, 5163070)
 
+# 以下特殊标记与 AlbertConfig 保持一致，最大程度保证了统一
 added_tokens_encoder = {'<pad>': 0, '<unk>': 1, '[CLS]': 2, '[SEP]': 3, '[MASK]': 4}
 
 sorted_tokens = list(added_tokens_encoder.keys())
