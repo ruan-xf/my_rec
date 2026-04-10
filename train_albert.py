@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import random
 
 import utils
@@ -6,7 +6,15 @@ import config
 
 import common
 from common import setup_experiment, create_ds_setting_parquet, build_trainer_params, collate_fn, FastDevRun
-from modeling_albert import model_init
+
+# from modeling_albert import model_init
+from modeling_albert import AlbertRec, RecConfig
+def model_init():
+    return AlbertRec(RecConfig(
+        num_hidden_layers=1,
+        dropout=0,
+        embedding_weight_decay=1e-5,
+    ))
 
 
 @dataclass
@@ -18,13 +26,24 @@ class AlbertTrainingArguments(config.MyDefaultTrainingArguments):
     max_steps: int = 20000
     # warmup_ratio: float = 0.1
     # learning_rate: float = 0.001
-    warmup_steps: int = 800
-    learning_rate: float = 1e-3
-    lr_scheduler_type: str = "constant_with_warmup"
+    # warmup_steps: int = 800
+    # learning_rate: float = 1e-3
+    # lr_scheduler_type: str = "constant_with_warmup"
+    learning_rate: float = 5e-4
+    lr_scheduler_type: str = "greedy"
+    lr_scheduler_kwargs: dict = field(default_factory=lambda: {
+        'patience': 2,
+        'min_lr': 1e-6,
+        'max_lr': 1e-2,
+        'factor': 0.95,
+        # 'smooth': True,
+        # 'window_size': 50,
+        # 'warmup': 1,
+    })
     fp16: bool = True
     logging_steps: int = 10
     save_steps: int = logging_steps * 10
-    eval_steps: int = logging_steps * 10
+    eval_steps: int = logging_steps * 5
     
 
 

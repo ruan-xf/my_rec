@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import shutil
 import transformers
 
@@ -18,8 +18,17 @@ class MLPTrainingArguments(config.MyDefaultTrainingArguments):
     gradient_accumulation_steps: int = 1
     max_steps: int = 20000
     # warmup_ratio: float = 0.1
-    learning_rate: float = 0.001
-    lr_scheduler_type: str = "constant"
+    learning_rate: float = 8e-3
+    lr_scheduler_type: str = "greedy"
+    lr_scheduler_kwargs: dict = field(default_factory=lambda: {
+        'patience': 2,
+        'min_lr': 1e-5,
+        'max_lr': 0.1,
+        'factor': 0.95,
+        # 'smooth': True,
+        # 'window_size': 50,
+        # 'warmup': 3,
+    })
     fp16: bool = True
     logging_steps: int = 10
     save_steps: int = logging_steps * 10
