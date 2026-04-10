@@ -12,8 +12,13 @@ import transformers
 from transformers import (
     Trainer, TrainingArguments,
     EarlyStoppingCallback, TrainerCallback,
+    ProgressCallback,
     # logging,
 )
+from transformers.utils import is_in_notebook
+
+if is_in_notebook():
+    from transformers.utils.notebook import NotebookProgressCallback
 
 # logging.enable_progress_bar()  
 # logging.set_verbosity_info()
@@ -213,14 +218,32 @@ def get_Trainer_common_params(model: nn.Module, args: TrainingArguments, ds_sett
         ],
     )
 
+class NotebookCallbackSwapper:
+    """上下文管理器：enter 时用 ProgressCallback，exit 时恢复 NotebookProgressCallback"""
+
+    def __init__(self, trainer: Trainer):
+        self.trainer = trainer
+
+    def __enter__(self):
+        self.trainer.remove_callback(NotebookProgressCallback)
+        self.trainer.add_callback(ProgressCallback)
+        return self.trainer
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.trainer.remove_callback(ProgressCallback)
+        self.trainer.add_callback(NotebookProgressCallback)
+        return False
+
+
 def trainer_init(trainer_params: dict, ds_setting: DatasetSetting):
     trainer = Trainer(**trainer_params)
     trainer.add_callback(EvalSlidingCallback(trainer, ds_setting))
     return trainer
-    
 
 def trainer_start(trainer: Trainer, ds_setting: DatasetSetting):
-    trainer.evaluate()
+    with NotebookCallbackSwapper(trainer):
+        trainer.evaluate()
     trainer.train()
-    trainer.log_metrics('test', trainer.evaluate(ds_setting.test_dataset, metric_key_prefix='test'))
+    with NotebookCallbackSwapper(trainer):
+        trainer.log_metrics('test', trainer.evaluate(ds_setting.test_dataset, metric_key_prefix='test'))
     # if wandb.run: wandb.run.finish()
