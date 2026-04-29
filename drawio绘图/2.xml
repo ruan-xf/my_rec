@@ -1,0 +1,31 @@
+<mxfile host="app.diagrams.net">
+  <diagram id="9N8RZsK964w8v9C_NK99" name="第 1 页">
+    <mxGraphModel dx="3025" dy="1865" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="pooler_text_label" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;" value="Linear: 512 → 512 + Tanh" vertex="1">
+          <mxGeometry height="30" width="200" x="-320" y="-610" as="geometry" />
+        </mxCell>
+        <mxCell id="output_text_label" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;" value="Linear: 512 → 1 + Sigmoid" vertex="1">
+          <mxGeometry height="30" width="200" x="-340" y="-735" as="geometry" />
+        </mxCell>
+        <mxCell id="dim_emb" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=right;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1" value="Embedding: 20" vertex="1">
+          <mxGeometry height="30" width="100" x="-320" y="-30" as="geometry" />
+        </mxCell>
+        <mxCell id="dim_concat" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=right;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1" value="拼接: 60" vertex="1">
+          <mxGeometry height="30" width="100" x="-305" y="-440" as="geometry" />
+        </mxCell>
+        <mxCell id="dim_transformer" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=right;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1" value="Transformer: 512" vertex="1">
+          <mxGeometry height="30" width="130" x="-320" y="-465" as="geometry" />
+        </mxCell>
+        <mxCell id="dim_pooler" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=right;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1" value="池化: 512" vertex="1">
+          <mxGeometry height="30" width="100" x="-300" y="-630" as="geometry" />
+        </mxCell>
+        <mxCell id="dim_output" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=right;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1" value="输出: 1" vertex="1">
+          <mxGeometry height="30" width="100" x="-220" y="-730" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

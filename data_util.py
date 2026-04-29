@@ -214,7 +214,8 @@ class DatasetSetting:
     def reset_eval_iter(self):
         self.eval_iter = self.indefinite_eval_dataset.map(compose(self.map_for_test)).iter(self.per_eval_size)
 
-    def generate_samples(self, item_seq, is_train):
+    @staticmethod
+    def generate_samples(item_seq, is_train):
         """
         使用新的采样策略生成样本
 

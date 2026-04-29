@@ -28,7 +28,7 @@ pad_mark = config.special_tokens_map['pad_token']
 df = pd.read_parquet(CATEGORY_ITEMS_FILE)
 category_to_items = df.set_index('category_id')['item_id']
 unique_items = pd.read_parquet(UNIQUE_ITEMS_FILE)
-all_categories = unique_items.category_id.unique()
+all_categories = category_to_items.index
 all_items = unique_items.item_id.unique()
 
 

@@ -13,6 +13,7 @@ from huggingface_hub.dataclasses import strict
 
 import config as global_config
 from config import seq_features
+import data_util
 import utils
 
 @strict
@@ -151,7 +152,7 @@ def create_ds_setting(is_fast_dev_run: bool = False):
         eval_size = 20
         test_size = 20
 
-    ds_setting = utils.DatasetSetting(eval_size)
+    ds_setting = data_util.DatasetSetting(eval_size)
     ds_setting._test_dataset = ds_setting._test_dataset.take(test_size)
     return ds_setting
 

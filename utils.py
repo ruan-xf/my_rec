@@ -43,7 +43,8 @@ class DatasetSetting:
         self.eval_iter = None
         self.per_eval_size = per_eval_size
 
-    def load_data(self, split: str):
+    @staticmethod
+    def load_data(split: str):
         return IterableDataset.from_parquet(
             f'data/processed/hf_saved/{split}.parquet',
         )
@@ -123,6 +124,9 @@ class TestTqdmCallback(TrainerCallback):
         self.step()
 
     def on_evaluate(self, args, state, control, **kwargs):
+        self.end()
+
+    def on_predict(self, args, state, control, **kwargs):
         self.end()
 
 class EvalSlidingCallback(TrainerCallback):

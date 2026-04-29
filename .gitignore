@@ -17,6 +17,7 @@ uv.lock
 # to large, need to copy manually or regenerate
 data/processed/full.parquet
 data/processed/hf_saved
+final_results
 
 
 # logs
@@ -29,8 +30,10 @@ data/cache
 # not use
 modeling.py
 train.py
-1.py
+!/**/1.py
+/1.py
 
 
 # not show
 关于bst
+论文写作

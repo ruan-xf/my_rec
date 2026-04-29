@@ -1,0 +1,59 @@
+<mxGraphModel dx="1960" dy="2228" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="900" math="0" shadow="0">
+  <root>
+    <mxCell id="0" />
+    <mxCell id="1" parent="0" />
+
+    <!-- 顶部汇聚节点 -->
+    <mxCell id="Top" value="统一汇聚节点" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#333333;fontSize=14;" vertex="1" parent="1">
+      <mxGeometry x="360" y="100" width="120" height="40" as="geometry" />
+    </mxCell>
+
+    <!-- 合并点（不可见节点） -->
+    <mxCell id="MergePoint" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+      <mxGeometry x="415" y="240" width="10" height="10" as="geometry" />
+    </mxCell>
+
+    <!-- 底部节点1 -->
+    <mxCell id="A" value="节点1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#333333;fontSize=14;" vertex="1" parent="1">
+      <mxGeometry x="120" y="300" width="80" height="40" as="geometry" />
+    </mxCell>
+
+    <!-- 底部节点2 -->
+    <mxCell id="B" value="节点2" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#333333;fontSize=14;" vertex="1" parent="1">
+      <mxGeometry x="280" y="300" width="80" height="40" as="geometry" />
+    </mxCell>
+
+    <!-- 底部节点3 -->
+    <mxCell id="C" value="节点3" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#333333;fontSize=14;" vertex="1" parent="1">
+      <mxGeometry x="440" y="300" width="80" height="40" as="geometry" />
+    </mxCell>
+
+    <!-- 底部节点4 -->
+    <mxCell id="D" value="节点4" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#333333;fontSize=14;" vertex="1" parent="1">
+      <mxGeometry x="600" y="300" width="80" height="40" as="geometry" />
+    </mxCell>
+
+    <!-- 底部节点 -> 合并点 -->
+    <mxCell id="edge_A_merge" edge="1" parent="1" source="A" target="MergePoint" style="endArrow=block;html=1;strokeWidth=2;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <mxCell id="edge_B_merge" edge="1" parent="1" source="B" target="MergePoint" style="endArrow=block;html=1;strokeWidth=2;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <mxCell id="edge_C_merge" edge="1" parent="1" source="C" target="MergePoint" style="endArrow=block;html=1;strokeWidth=2;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <mxCell id="edge_D_merge" edge="1" parent="1" source="D" target="MergePoint" style="endArrow=block;html=1;strokeWidth=2;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- 合并点 -> Top (粗箭头) -->
+    <mxCell id="edge_merge_top" edge="1" parent="1" source="MergePoint" target="Top" style="endArrow=block;html=1;strokeWidth=4;">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+  </root>
+</mxGraphModel>

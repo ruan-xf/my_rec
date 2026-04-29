@@ -1,0 +1,34 @@
+<mxfile host="app.diagrams.net" agent="Claude">
+  <diagram name="向量表示示例-翻转90度" id="vector-example-rotated">
+    <mxGraphModel dx="731" dy="531" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="QQNXnBlaYeK7W0NBirAn-1" connectable="0" parent="1" style="group;rotation=0;" value="" vertex="1">
+          <mxGeometry height="80" width="20" x="340" y="190" as="geometry" />
+        </mxCell>
+        <mxCell id="NKLYaHYFLhCI7306erll-19" parent="QQNXnBlaYeK7W0NBirAn-1" style="rounded=0;whiteSpace=wrap;html=1;container=0;direction=east;rotation=-180;" value="" vertex="1">
+          <mxGeometry height="80" width="20" as="geometry" />
+        </mxCell>
+        <mxCell id="NKLYaHYFLhCI7306erll-21" parent="QQNXnBlaYeK7W0NBirAn-1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=light-dark(#FFFFFF,#FFFFFF);strokeColor=#333333;container=0;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=12;fontColor=default;rotation=-180;" value="" vertex="1">
+          <mxGeometry height="10" width="10" x="5" y="5" as="geometry" />
+        </mxCell>
+        <mxCell id="NKLYaHYFLhCI7306erll-22" edge="1" parent="QQNXnBlaYeK7W0NBirAn-1" source="NKLYaHYFLhCI7306erll-17" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;dashPattern=1 4;startArrow=none;startFill=0;endArrow=none;endFill=0;" target="NKLYaHYFLhCI7306erll-21" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="NKLYaHYFLhCI7306erll-14" parent="QQNXnBlaYeK7W0NBirAn-1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=light-dark(#FFFFFF,#FFFFFF);strokeColor=#333333;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=12;fontColor=default;container=0;rotation=-180;" value="" vertex="1">
+          <mxGeometry height="10" width="10" x="5" y="64" as="geometry" />
+        </mxCell>
+        <mxCell id="NKLYaHYFLhCI7306erll-15" parent="QQNXnBlaYeK7W0NBirAn-1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=light-dark(#FFFFFF,#FFFFFF);strokeColor=#333333;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=12;fontColor=default;container=0;rotation=-180;" value="" vertex="1">
+          <mxGeometry height="10" width="10" x="5" y="51" as="geometry" />
+        </mxCell>
+        <mxCell id="NKLYaHYFLhCI7306erll-16" parent="QQNXnBlaYeK7W0NBirAn-1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=light-dark(#FFFFFF,#FFFFFF);strokeColor=#333333;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=12;fontColor=default;container=0;rotation=-180;" value="" vertex="1">
+          <mxGeometry height="10" width="10" x="5" y="39" as="geometry" />
+        </mxCell>
+        <mxCell id="NKLYaHYFLhCI7306erll-17" parent="QQNXnBlaYeK7W0NBirAn-1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=light-dark(#FFFFFF,#FFFFFF);strokeColor=#333333;container=0;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=12;fontColor=default;rotation=-180;" value="" vertex="1">
+          <mxGeometry height="10" width="10" x="5" y="26" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
