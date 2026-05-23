@@ -26,7 +26,7 @@ for i in range(num_samples):
     for h in range(num_heads):
         ax = axes[i, h]
         attn_matrix = attention_weights[h]  # 获取第h个头的注意力权重
-        ax.imshow(attn_matrix, cmap='viridis', aspect='auto')
+        ax.imshow(attn_matrix, cmap='gray_r', aspect='auto')
 
         if i == 0:
             ax.set_title(f'Head {h+1}', fontsize=10)

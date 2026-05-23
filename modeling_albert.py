@@ -52,18 +52,6 @@ class AlbertRec(transformers.PreTrainedModel, common.FeatureEmbeddingMixin):
     def forward(self, behavior_type, category_id, item_id, attention_mask, token_type_ids, labels, item_seq=None, **kwargs):
         concated = self._concat_feature_embeddings(behavior_type, category_id, item_id)
 
-        # 不该手动调用
-        # 重复计算：两次 embeddings 调用会导致：
-            # token_type embeddings 被加了两次
-            # position embeddings 被加了两次
-            # LayerNorm 被应用了两次
-            # Dropout 被应用了两次（这会改变随机性！）
-        # 语义错误：最终得到的 embedding 并不是你想要的，因为：
-            # position embedding 被加了两次 → 位置信息被双重加权
-            # Dropout 被应用两次 → 正则化效果过强
-        # 潜在的训练不稳定：由于 Dropout 的随机性，两次应用会导致梯度计算不一致
-        # inputs_embeds = self.albert_classifier.albert.embeddings(inputs_embeds=concated)
-
         out = self.albert_classifier.forward(
             inputs_embeds=concated,
             attention_mask=attention_mask,

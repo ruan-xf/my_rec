@@ -9,8 +9,8 @@ cuda 12.7
 uv sync  --extra cu126
 ```
 
-运行环境提示  
-CPU（≥8G内存）或 GPU（≥8G显存）  
+运行所需硬件  
+GPU（≥8G显存），若无，CPU（≥16G内存）也可满足训练需求  
 
 文件过大需要重新生成或手动复制的  
 full.parquet, data_util.py save_full  
@@ -39,7 +39,7 @@ cnn 全局最大池化 不管序列有多长，都能得到固定长度的向量
 训练看板使用tensorboard  
 设置另外的logging_dir，与保存的checkpoint独立，这样一是checkpoint可被覆盖而记录仍可查阅，二是便于比较（同比 / 环比）  
 
-## 主要成果：复现了bst并确认了长距离依赖的捕捉能力
+## 主要成果：使用albert复现了bst并确认了长距离依赖的捕捉能力
 踩了两个多月的坑  
 
 
@@ -78,7 +78,14 @@ MovieLens 数据集
 - 再就是非真实的都打为0了根本就不能表示正确预测用户偏好的程度，我觉得这样模型很难学到什么（具体表现就是不收敛）
 
 
-新的采样方法  
+另外有人实现的bst [jiwidi/Behavior-Sequence-Transformer-Pytorch: This is a pytorch implementation for the BST model from Alibaba https://arxiv.org/pdf/1905.06874.pdf](https://github.com/jiwidi/Behavior-Sequence-Transformer-Pytorch)  
+
+用的是Movielens，预测rating，指标也是mae/mse  
+直接预测数据集就包含的评分字段，这就不会有采样的坑了  
+
+而我用的是这个数据集：[淘宝用户购物行为数据集_数据集-阿里云天池](https://tianchi.aliyun.com/dataset/649)  
+特征简单，用我采样方法得到的数据进行学习后结果符合预期  
+
 使用类目特征将采样样本划分为四大类  
 - 1 类目正确 + 物品正确
 - 0.8 类目正确 + 同类错误物品
@@ -143,6 +150,34 @@ NLP 需要 12 个注意力头捕捉语法、语义、上下文指代等复杂特
 
 结论：电商用户行为序列是低维度、结构化的离散特征，远低于自然语言的语义复杂度，1 层 8 头轻量化 Transformer足以建模用户历史交互与候选物品的匹配关系，无需深层多头的冗余结构  
 
+## 为什么是albert
+transformer -> bert -> albert  
+
+与transformer完整的 encoder-decoder 不同，bert只使用了encoder，只使用encoder这点与bst的论文相同  
+而albert相较于bert又减少了嵌入层参数  
+与bert词嵌入矩阵和隐藏层维度一样大的做法不同，ALBERT 的嵌入层因子分解会先得到词的低维嵌入，再映射到隐藏层的维度，即便词表长度 V 很大，通过降低嵌入维度 E，仍然能显著减少参数。  
+下面根据这里的描述对我的任务中这部分节省的参数量进行计算  
+
+推荐系统中有多个特征，用最稀疏的物品进行估算  
+O(V×H) -> O(V×E+E×H)  
+v: 3652290 （训练集物品数）  
+E: 60 （设置的嵌入维度，包含所有特征）  
+H: 512  
+
+V\*(H/3) -> V\*(E/3) + E\*H  
+```
+>>> v,e,h = 3652290, 60, 512
+>>> a1 = v*(h//3)
+>>> a2 = v*(e//3)+(e//3)*h
+>>> a1, a2
+(620889300, 73056040)
+>>> a2/a1
+0.11769653624245095
+```
+按float32（4 字节）算，节省的这部分参数量相当于2.19G的显存  
+这使我能够在8G显存的机器上运行训练  
+
+另外，bert类模型是双向注意力，我未确定双向的注意力在我的任务中是否必要  
 
 ## 具备长距离依赖的捕捉能力了吗？
 长距离依赖存在的两个方面：注意力热力图和指标随区间长度变化的趋势  
@@ -185,4 +220,8 @@ cumulative_mae的下降或上升能够揭示新增的样本是表现得更好还
 2. 真实类目组（False）：
    - 最优序列长度≈**200-300**，需要长序列做细粒度物品区分
    - 超过300后性能显著退化
+
+## 推荐系统的其他研究
+- [LLM增强序列推荐（LLMESR）模型代码详解LLM增强序列推荐（LLMESR）模型代码详解 论文解读见LLM-ESR: - 掘金](https://juejin.cn/post/7478182398409769012)
+- [推荐模型梳理 - Brain404 - 博客园](https://www.cnblogs.com/rh-li/p/18538422#gru4recrnn-based)
 
